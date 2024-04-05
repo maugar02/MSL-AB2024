@@ -221,7 +221,7 @@ void loop()
   Serial.print(digitalRead(OS_RIGHT));
   Serial.print("\n");*/
 
-  /*IFMOVER mov = LeerInfrarojos();
+  IFMOVER mov = LeerInfrarojos();
   if(mov == ADELANTE)
   {
     MoverAdelante();
@@ -234,8 +234,8 @@ void loop()
   }else if(mov == DERECHA)
   {
     MoverDerecha();
-  }*/
+  }
 
-  MoverAdelante();
+  //MoverAdelante();
   delay(10);
 }

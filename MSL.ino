@@ -5,7 +5,7 @@
 
 /* Librerías */
 #include <Servo.h>
-#include <NewPing.h>
+//#include <NewPing.h>
 
 /* Variables */
 // Guarda información acerca de un objecto detectado por el sensor ultrasonico
@@ -26,17 +26,19 @@ enum IFMOVER
 
 // *** Control de los motores DC ***
 
-#define M_IN1 2	// Motor Derecho
-#define M_IN2 3
-#define M_IN3 4	// Motor Izquierdo
-#define M_IN4 5
+#define M_IN1 11  // Motor Derecho
+#define M_IN2 12
+#define M_IN3 13 // Motor Izquierdo
+#define M_IN4 8
+#define V_MD 9
+#define V_MI 10
 
 // *** Sensores ópticos ***
-#define OS_LEFT 6    // Sensor izquierdo
-#define OS_RIGHT 7 // Sensor derecho
+#define OS_LEFT 3    // Sensor izquierdo
+#define OS_RIGHT 2 // Sensor derecho
 
 // ** Servo motor de la plataforma ***
-#define SERVO_P 12
+#define SERVO_P 7
 
 // ** Ultrasonico  frontal **/
 #define US_ECHO 8
@@ -44,13 +46,13 @@ enum IFMOVER
 #define DISTANCIA_MAX 50 // Hasta 1 metro
 
 Servo Plataforma;
-NewPing Ultrasonico(US_TRIG, US_ECHO,DISTANCIA_MAX);
+//NewPing Ultrasonico(US_TRIG, US_ECHO,DISTANCIA_MAX);
  
 /* Funciones */
 void MoverAdelante()
 {
-  digitalWrite(M_IN1, LOW); // Adelante
-  digitalWrite(M_IN2, HIGH);
+  digitalWrite(M_IN1, HIGH); // Adelante
+  digitalWrite(M_IN2, LOW);
   digitalWrite(M_IN3, HIGH); // Adelante
   digitalWrite(M_IN4, LOW);
   Serial.println("[MOVER ADELANTE]");
@@ -58,26 +60,26 @@ void MoverAdelante()
 
 void MoverAtras()
 {
-  digitalWrite(M_IN1, HIGH); // Atras
-  digitalWrite(M_IN2, LOW);
+  digitalWrite(M_IN1, LOW); // Atras
+  digitalWrite(M_IN2, HIGH);
   digitalWrite(M_IN3, LOW); // Atras
   digitalWrite(M_IN4, HIGH);
   Serial.println("[MOVER ATRAS]");
 }
 
-void MoverDerecha()
+void MoverIzquierda()
 {
-  digitalWrite(M_IN1, HIGH); // Iz atras
-  digitalWrite(M_IN2, LOW);
+  digitalWrite(M_IN1, LOW); // Iz atras
+  digitalWrite(M_IN2, HIGH);
   digitalWrite(M_IN3, HIGH); // Adelante
   digitalWrite(M_IN4, LOW);
   Serial.println("[MOVER DERECHA]");
 }
 
-void MoverIzquierda()
+void MoverDerecha()
 {
-  digitalWrite(M_IN1, LOW); // Iz adelante
-  digitalWrite(M_IN2,HIGH);
+  digitalWrite(M_IN1, HIGH); // Iz adelante
+  digitalWrite(M_IN2,LOW);
   digitalWrite(M_IN3, LOW); // Atras
   digitalWrite(M_IN4, HIGH);
   Serial.println("[MOVER IZQUIERDA]");
@@ -125,13 +127,13 @@ IFMOVER LeerInfrarojos()
     Serial.println("[LEER INFRAROJOS] -> ADELANTE");
     return ADELANTE;
   }
-  else if(izquierdo == HIGH && derecho == LOW)
+  else if(izquierdo == LOW && derecho == HIGH)
   {
     // Izquierdo en la linea
     Serial.println("[LEER INFRAROJOS] -> DERECHA");
     return DERECHA;
   }
-  else if(izquierdo == LOW && derecho == HIGH)
+  else if(izquierdo == HIGH && derecho == LOW)
   {
     // Derecho en la linea
     Serial.println("[LEER INFRAROJOS] -> IZQUIERDA");
@@ -141,7 +143,7 @@ IFMOVER LeerInfrarojos()
   return DETENER;
 }
 
-OBJETO LeerUltrasonico()
+/*OBJETO LeerUltrasonico()
 {
   
   OBJETO obj = {LOW, LOW}; // Nuestro objeto
@@ -159,20 +161,20 @@ OBJETO LeerUltrasonico()
   }
   Serial.println("[LEER ULTRASONICO] Ok");
   return obj;
-}
+}*/
 
 // ** FUNCIONES PARA PRUEBAS **
 void PruebaMovimiento()
 {
-  delay(3000);
+  delay(1000);
   MoverAdelante();
-  delay(3000);
+  delay(1000);
   MoverAtras();
-  delay(3000);
+  delay(1000);
   MoverDerecha();
-  delay(3000);
+  delay(1000);
   MoverIzquierda();
-  delay(3000);
+  delay(1000);
   Detener();
 }
 
@@ -193,15 +195,19 @@ void setup()
   pinMode(M_IN2, OUTPUT);
   pinMode(M_IN3, OUTPUT);
   pinMode(M_IN4, OUTPUT);
-
+  pinMode(V_MD, OUTPUT);
+  pinMode(V_MI, OUTPUT);
+  
   // Ahora colocamos como entradas los pines para los sensores ópticos
   pinMode(OS_LEFT, INPUT);
   pinMode(OS_RIGHT, INPUT);
 
   // Ahora la salida para el servo Motor
-  Plataforma.attach(SERVO_P);
-
+  //Plataforma.attach(SERVO_P);
+  analogWrite(V_MD, 130);
+  analogWrite(V_MI, 100);
   Serial.println("[SETUP]");
+  Detener();
 }
 
 /* Bucle principal */
@@ -213,13 +219,13 @@ void loop()
     Serial.print("Objecto detectado! a: ");
     Serial.print(obj1.distancia);
     Serial.print("\n");
-  }
+  }*/
   Serial.print("Sensor Izq:");
   Serial.print(digitalRead(OS_LEFT));
   Serial.print("\n");
   Serial.print("Sensor dere:");
   Serial.print(digitalRead(OS_RIGHT));
-  Serial.print("\n");*/
+  Serial.print("\n");
 
   IFMOVER mov = LeerInfrarojos();
   if(mov == ADELANTE)
@@ -227,15 +233,17 @@ void loop()
     MoverAdelante();
   }else if(mov == DETENER)
   {
-    Detener();
+    Detener();;
   }else if(mov == IZQUIERDA)
   {
     MoverIzquierda();
   }else if(mov == DERECHA)
   {
-    MoverDerecha();
+    MoverDerecha();;
   }
 
+  
+  //PruebaMovimiento();
   //MoverAdelante();
-  delay(10);
+  //delay(5);
 }

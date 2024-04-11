@@ -44,6 +44,8 @@ enum IFMOVER
 #define US_TRIG 4
 #define DISTANCIA_MAX 100 // Hasta 1 metro
 
+#define PIN_ALARMA A3
+
 NewPing sonar(US_TRIG, US_ECHO,DISTANCIA_MAX);
  
 /* Funciones */
@@ -111,6 +113,13 @@ void DetenerPlataforma()
   digitalWrite(MP_IN3, LOW);
   digitalWrite(MP_IN4, LOW);
   Serial.println("[DETENER PLATAFORMA]");
+}
+
+void VueltaU()
+{
+  MoverIzquierda();
+  delay(1500);
+  Detener();
 }
 
 IFMOVER LeerInfrarojos()
@@ -211,36 +220,22 @@ void setup()
   pinMode(MP_IN3, OUTPUT);
   pinMode(MP_IN4, OUTPUT);
   pinMode(V_MP, OUTPUT);
+  pinMode(PIN_ALARMA, OUTPUT);
   
   // Ahora colocamos como entradas los pines para los sensores ópticos
   pinMode(OS_LEFT, INPUT);
   pinMode(OS_RIGHT, INPUT);
 
-  analogWrite(V_MD, 150); //130
-  analogWrite(V_MI, 120); //100
+  analogWrite(V_MD, 60); //130
+  analogWrite(V_MI, 50); //100
   analogWrite(V_MP, 150); //100
   
   Serial.println("[SETUP]");
   Detener();
 }
 
-/* Bucle principal */
-void loop()
+void SeguidorDeLinea()
 {
-  /*OBJETO obj1 = LeerUltrasonico();
-  if(obj1.detectado)
-  {
-    Serial.print("Objecto detectado! a: ");
-    Serial.print(obj1.distancia);
-    Serial.print("\n");
-  }
-  Serial.print("Sensor Izq:");
-  Serial.print(digitalRead(OS_LEFT));
-  Serial.print("\n");
-  Serial.print("Sensor dere:");
-  Serial.print(digitalRead(OS_RIGHT));
-  Serial.print("\n");
-
   IFMOVER mov = LeerInfrarojos();
   if(mov == ADELANTE)
   {
@@ -254,10 +249,71 @@ void loop()
   }else if(mov == DERECHA)
   {
     MoverDerecha();
-  }*/
+  }
+}
+void Montacargas()
+{
+  OBJETO obj2 = {LOW, 0};
+  IFMOVER mov;
+  Detener(); // Detenemos el robot para proceder a recoger la caja
 
-  PruebaPlataforma();
-  //PruebaMovimiento();
-  //MoverAdelante();
-  delay(1);
+  // Activamos la alarma
+  digitalWrite(PIN_ALARMA, HIGH);
+
+  // Procedemos a avanzar hasta que el objecto esté cerca
+  do
+  {
+    SeguidorDeLinea();
+    obj2 = LeerUltrasonico();
+  }while(obj2.distancia >= 3);
+
+  // Una vez los suficientemente cerca nos detenemos y levantamos la pala
+  Detener();
+  delay(1000);
+  SubirPlataforma();
+  delay(1000);
+  DetenerPlataforma();
+  delay(1000);
+  // Desactivamos la alarma
+  digitalWrite(PIN_ALARMA, LOW);
+
+  // Ahora avanzamos en modo seguidor de línea hasta que llegemos al final
+  do
+  {
+    mov = LeerInfrarojos();
+    SeguidorDeLinea();
+  }while(mov != DETENER);
+
+  // Llegamos a la meta y bajamos la caja
+  Detener();
+  delay(1000);
+  // Volvemos a activar la alarma
+  digitalWrite(PIN_ALARMA, HIGH);
+  
+  BajarPlataforma();
+  delay(1000);
+  DetenerPlataforma();
+  digitalWrite(PIN_ALARMA, LOW);
+  delay(1000);
+}
+
+/* Bucle principal */
+void loop()
+{
+  OBJETO obj1 = LeerUltrasonico();
+  /*if(obj1.detectado)
+  {
+    Serial.print("Objecto detectado! a: ");
+    Serial.print(obj1.distancia);
+    Serial.print("\n");
+  }
+  Serial.print("Sensor Izq:");
+  Serial.print(digitalRead(OS_LEFT));
+  Serial.print("\n");
+  Serial.print("Sensor dere:");
+  Serial.print(digitalRead(OS_RIGHT));
+  Serial.print("\n");*/
+
+  if(obj1.detectado && obj1.distancia <= 20) Montacargas();
+  SeguidorDeLinea();
 }

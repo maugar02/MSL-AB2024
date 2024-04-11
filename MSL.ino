@@ -4,8 +4,7 @@
  */
 
 /* Librerías */
-#include <Servo.h>
-//#include <NewPing.h>
+#include <NewPing.h>
 
 /* Variables */
 // Guarda información acerca de un objecto detectado por el sensor ultrasonico
@@ -30,23 +29,22 @@ enum IFMOVER
 #define M_IN2 12
 #define M_IN3 13 // Motor Izquierdo
 #define M_IN4 8
+#define MP_IN3 A5
+#define MP_IN4 A4
 #define V_MD 9
 #define V_MI 10
+#define V_MP 5
 
 // *** Sensores ópticos ***
 #define OS_LEFT 3    // Sensor izquierdo
 #define OS_RIGHT 2 // Sensor derecho
 
-// ** Servo motor de la plataforma ***
-#define SERVO_P 7
-
 // ** Ultrasonico  frontal **/
-#define US_ECHO 8
-#define US_TRIG 9
-#define DISTANCIA_MAX 50 // Hasta 1 metro
+#define US_ECHO 6
+#define US_TRIG 4
+#define DISTANCIA_MAX 100 // Hasta 1 metro
 
-Servo Plataforma;
-//NewPing Ultrasonico(US_TRIG, US_ECHO,DISTANCIA_MAX);
+NewPing sonar(US_TRIG, US_ECHO,DISTANCIA_MAX);
  
 /* Funciones */
 void MoverAdelante()
@@ -96,14 +94,23 @@ void Detener()
 
 void SubirPlataforma()
 {
-  Plataforma.write(180);
+  digitalWrite(MP_IN3, LOW);
+  digitalWrite(MP_IN4,HIGH);
   Serial.println("[SUBIR PLATAFORMA]");
 }
 
 void BajarPlataforma()
 {
-  Plataforma.write(0);
+  digitalWrite(MP_IN3, HIGH);
+  digitalWrite(MP_IN4, LOW);
   Serial.println("[BAJAR PLATAFORMA]");
+}
+
+void DetenerPlataforma()
+{
+  digitalWrite(MP_IN3, LOW);
+  digitalWrite(MP_IN4, LOW);
+  Serial.println("[DETENER PLATAFORMA]");
 }
 
 IFMOVER LeerInfrarojos()
@@ -143,12 +150,12 @@ IFMOVER LeerInfrarojos()
   return DETENER;
 }
 
-/*OBJETO LeerUltrasonico()
+OBJETO LeerUltrasonico()
 {
   
   OBJETO obj = {LOW, LOW}; // Nuestro objeto
   int dist = 0;
-  dist = Ultrasonico.ping_cm();
+  dist = sonar.ping_cm();
   delay(50);
   if(dist == 0)
   {
@@ -161,7 +168,7 @@ IFMOVER LeerInfrarojos()
   }
   Serial.println("[LEER ULTRASONICO] Ok");
   return obj;
-}*/
+}
 
 // ** FUNCIONES PARA PRUEBAS **
 void PruebaMovimiento()
@@ -178,12 +185,16 @@ void PruebaMovimiento()
   Detener();
 }
 
-void PruebaServo()
+void PruebaPlataforma()
 {
+  delay(1000);
   SubirPlataforma();
-  delay(3000);
+  delay(2000);
+  DetenerPlataforma();
+  delay(1000);
   BajarPlataforma();
-  delay(3000);
+  delay(2000);
+  DetenerPlataforma();
 }
 
 /* Inicialización */
@@ -197,15 +208,18 @@ void setup()
   pinMode(M_IN4, OUTPUT);
   pinMode(V_MD, OUTPUT);
   pinMode(V_MI, OUTPUT);
+  pinMode(MP_IN3, OUTPUT);
+  pinMode(MP_IN4, OUTPUT);
+  pinMode(V_MP, OUTPUT);
   
   // Ahora colocamos como entradas los pines para los sensores ópticos
   pinMode(OS_LEFT, INPUT);
   pinMode(OS_RIGHT, INPUT);
 
-  // Ahora la salida para el servo Motor
-  //Plataforma.attach(SERVO_P);
-  analogWrite(V_MD, 130);
-  analogWrite(V_MI, 100);
+  analogWrite(V_MD, 150); //130
+  analogWrite(V_MI, 120); //100
+  analogWrite(V_MP, 150); //100
+  
   Serial.println("[SETUP]");
   Detener();
 }
@@ -219,7 +233,7 @@ void loop()
     Serial.print("Objecto detectado! a: ");
     Serial.print(obj1.distancia);
     Serial.print("\n");
-  }*/
+  }
   Serial.print("Sensor Izq:");
   Serial.print(digitalRead(OS_LEFT));
   Serial.print("\n");
@@ -233,17 +247,17 @@ void loop()
     MoverAdelante();
   }else if(mov == DETENER)
   {
-    Detener();;
+    Detener();
   }else if(mov == IZQUIERDA)
   {
     MoverIzquierda();
   }else if(mov == DERECHA)
   {
-    MoverDerecha();;
-  }
+    MoverDerecha();
+  }*/
 
-  
+  PruebaPlataforma();
   //PruebaMovimiento();
   //MoverAdelante();
-  //delay(5);
+  delay(1);
 }

@@ -35,6 +35,9 @@ enum IFMOVER
 #define V_MI 10
 #define V_MP 5
 
+// *** VELOCIDAD DEL ROBOT **
+#define VELOCIDAD 130
+
 // *** Sensores ópticos ***
 #define OS_LEFT 3    // Sensor izquierdo
 #define OS_RIGHT 2 // Sensor derecho
@@ -226,8 +229,8 @@ void setup()
   pinMode(OS_LEFT, INPUT);
   pinMode(OS_RIGHT, INPUT);
 
-  analogWrite(V_MD, 60); //130
-  analogWrite(V_MI, 50); //100
+  analogWrite(V_MD, VELOCIDAD); //130
+  analogWrite(V_MI, VELOCIDAD-30); //100 // El motor izquierdo se mueve más rápido
   analogWrite(V_MP, 150); //100
   
   Serial.println("[SETUP]");
